@@ -1,0 +1,6 @@
+74hc595.c:18:6:hc595_init	16	static
+74hc595.c:30:6:hc595_setBrightness	16	static
+74hc595.c:39:6:hc595_enable	8	static
+74hc595.c:47:6:hc595_disable	8	static
+74hc595.c:55:6:hc595_update	16	static
+74hc595.c:72:6:hc595_reset	8	static
