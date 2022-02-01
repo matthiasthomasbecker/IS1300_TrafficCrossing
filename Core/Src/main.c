@@ -21,6 +21,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdio.h>
+#include "retarget.h"
 #include "ssd1306.h"
 #include "trafficlights.h"
 /* USER CODE END Includes */
@@ -112,7 +114,7 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
-
+  RetargetInit(&huart2);
   tl_init();
 
   ssd1306_Init();
@@ -128,7 +130,8 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  tl_brightnessControl();
+	  HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

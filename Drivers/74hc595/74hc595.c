@@ -37,7 +37,6 @@ void hc595_setBrightness(uint8_t _percentage) {
  *
  */
 void hc595_enable(void) {
-	//HAL_GPIO_WritePin(HC595_OE_PORT, HC595_OE_PIN, GPIO_PIN_RESET);
 	hc595_setBrightness(100);
 }
 
@@ -45,7 +44,6 @@ void hc595_enable(void) {
  *
  */
 void hc595_disable(void) {
-	//HAL_GPIO_WritePin(HC595_OE_PORT, HC595_OE_PIN, GPIO_PIN_SET);
 	hc595_setBrightness(0);
 }
 
