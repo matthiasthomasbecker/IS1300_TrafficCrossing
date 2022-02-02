@@ -24,6 +24,8 @@
 #include <stdio.h>
 #include "retarget.h"
 #include "ssd1306.h"
+#include "sht2x_for_stm32_hal.h"
+#include "lis2dw12_reg.h"
 #include "trafficlights.h"
 #include "traffic_inputs.h"
 /* USER CODE END Includes */
@@ -57,7 +59,7 @@ UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+static uint8_t whoamI;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -71,7 +73,10 @@ static void MX_ADC1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM3_Init(void);
 /* USER CODE BEGIN PFP */
-
+static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp,
+                              uint16_t len);
+static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp,
+                             uint16_t len);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -116,7 +121,18 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   RetargetInit(&huart2);
+
+  /* Initialize mems driver interface */
+  stmdev_ctx_t dev_ctx;
+  lis2dw12_reg_t int_route;
+  dev_ctx.write_reg = platform_write;
+  dev_ctx.read_reg = platform_read;
+  dev_ctx.handle = &hi2c3;
+
   tl_init();
+
+  SHT2x_Init(&hi2c3);
+  SHT2x_SetResolution(RES_14_12);
 
   ssd1306_Init();
   ssd1306_Fill(Black);
@@ -124,7 +140,15 @@ int main(void)
   ssd1306_WriteString("IS1300", Font_16x26, White);
   ssd1306_UpdateScreen();
 
+  HAL_Delay(20);
   uint8_t count = 0;
+
+  lis2dw12_device_id_get(&dev_ctx, &whoamI);
+  if (whoamI != LIS2DW12_ID) {
+	  printf("lis2dw12 not detected...\r\n");
+  } else {
+	  printf("lis2dw12 detected!\r\n");
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -136,7 +160,11 @@ int main(void)
 
 	  if (count == 10) {
 		  count = 0;
-		  ti_test_inputs();
+		  //ti_test_inputs();
+
+		  float cel = SHT2x_GetTemperature(1);
+		  float rh = SHT2x_GetRelativeHumidity(1);
+		  printf("%d.%dºC, %d.%d%% RH\r\n", SHT2x_GetInteger(cel), SHT2x_GetDecimal(cel, 1), SHT2x_GetInteger(rh), SHT2x_GetDecimal(rh, 1));
 	  }
 	  count++;
     /* USER CODE END WHILE */
@@ -574,6 +602,22 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+
+static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp,
+                              uint16_t len)
+{
+  HAL_I2C_Mem_Write(handle, LIS2DW12_I2C_ADD_H, reg,
+                    I2C_MEMADD_SIZE_8BIT, (uint8_t*) bufp, len, 1000);
+  return 0;
+}
+
+static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp,
+                             uint16_t len)
+{
+  HAL_I2C_Mem_Read(handle, LIS2DW12_I2C_ADD_H, reg,
+                   I2C_MEMADD_SIZE_8BIT, bufp, len, 1000);
+  return 0;
+}
 
 /* USER CODE END 4 */
 
