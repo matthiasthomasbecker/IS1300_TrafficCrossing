@@ -25,6 +25,7 @@
 #include "retarget.h"
 #include "ssd1306.h"
 #include "trafficlights.h"
+#include "traffic_inputs.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -123,15 +124,23 @@ int main(void)
   ssd1306_WriteString("IS1300", Font_16x26, White);
   ssd1306_UpdateScreen();
 
+  uint8_t count = 0;
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    /* USER CODE END WHILE */
 	  tl_brightnessControl();
 	  HAL_Delay(100);
+
+	  if (count == 10) {
+		  count = 0;
+		  ti_test_inputs();
+	  }
+	  count++;
+    /* USER CODE END WHILE */
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -531,7 +540,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : TL1_Car_Pin Button3_C_Pin Button3_B_Pin Button3_A_Pin */
   GPIO_InitStruct.Pin = TL1_Car_Pin|Button3_C_Pin|Button3_B_Pin|Button3_A_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /*Configure GPIO pins : SPI_CS_U1_Pin SPI_CS_U3_Pin */
@@ -546,7 +555,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = TL2_Car_Pin|TL3_Car_Pin|PL2_Switch_Pin|Button3_Center_Pin
                           |Button3_D_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Disp_DataInstr_Pin Disp_Reset_Pin Disp_CS_Pin */
@@ -559,7 +568,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pins : TL4_Car_Pin PL1_Switch_Pin */
   GPIO_InitStruct.Pin = TL4_Car_Pin|PL1_Switch_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
 }
