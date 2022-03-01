@@ -10,7 +10,7 @@
 #include "trafficlights_config.h"
 
 
-extern SPI_HandleTypeDef hspi2;
+extern SPI_HandleTypeDef hspi3;
 
 extern ADC_HandleTypeDef hadc1;
 
@@ -20,7 +20,7 @@ extern ADC_HandleTypeDef hadc1;
 static uint8_t light_state[] = {0x00, 0x00, 0x00};
 
 void tl_init() {
-	hc595_init(&hspi2, 3);
+	hc595_init(&hspi3, 3);
 	hc595_update(light_state);
 	tl_brightnessControl();
 

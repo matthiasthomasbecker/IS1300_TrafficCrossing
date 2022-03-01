@@ -1,2 +1,0 @@
-trafficlights.c:22:6:tl_init	8	static
-trafficlights.c:57:6:tl_setLight	16	static

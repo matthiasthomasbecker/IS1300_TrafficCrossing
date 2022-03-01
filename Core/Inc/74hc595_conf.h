@@ -10,8 +10,8 @@
 
 #include "main.h"
 
-#define HC595_STCP_PORT		SPI_CS_U1_GPIO_Port
-#define HC595_STCP_PIN		SPI_CS_U1_Pin
+#define HC595_STCP_PORT		STCP_595_GPIO_Port
+#define HC595_STCP_PIN		STCP_595_Pin
 #define HC595_MR_PORT		Reset_595_GPIO_Port
 #define HC595_MR_PIN		Reset_595_Pin
 //#define HC595_OE_PORT		Enable_595_GPIO_Port

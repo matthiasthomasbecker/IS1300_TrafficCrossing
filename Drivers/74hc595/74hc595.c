@@ -53,15 +53,8 @@ void hc595_disable(void) {
 void hc595_update(uint8_t* buffer) {
 	HAL_SPI_Transmit(spi_handle, buffer, count, 1);
 
-	//Toggle the STCP pin on each 74HC595 (will be changed once revision 2 arrives)
 	HAL_GPIO_WritePin(HC595_STCP_PORT, HC595_STCP_PIN, GPIO_PIN_SET);
 	HAL_GPIO_WritePin(HC595_STCP_PORT, HC595_STCP_PIN, GPIO_PIN_RESET);
-
-	HAL_GPIO_WritePin(SPI_CS_U2_GPIO_Port, SPI_CS_U2_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(SPI_CS_U2_GPIO_Port, SPI_CS_U2_Pin, GPIO_PIN_RESET);
-
-	HAL_GPIO_WritePin(TL3_Car_GPIO_Port, SPI_CS_U3_Pin, GPIO_PIN_SET);
-	HAL_GPIO_WritePin(TL3_Car_GPIO_Port, SPI_CS_U3_Pin, GPIO_PIN_RESET);
 }
 
 /**
