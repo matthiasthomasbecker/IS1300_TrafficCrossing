@@ -12,17 +12,17 @@
 
 extern SPI_HandleTypeDef hspi3;
 
-extern ADC_HandleTypeDef hadc1;
-
 /**
  * Private variable to keep track of the current state of each light
  */
 static uint8_t light_state[] = {0x00, 0x00, 0x00};
 
+static uint8_t brightness = 0;
+
 void tl_init() {
 	hc595_init(&hspi3, 3);
 	hc595_update(light_state);
-	tl_brightnessControl();
+	tl_brightnessUpdate();
 
 	tl_setLight(&crossing[NORTH].street_signal->red, ON);
 	tl_setLight(&crossing[NORTH].street_signal->yellow, ON);
@@ -71,18 +71,10 @@ void tl_update(void) {
 /**
  * Call this function to set the traffic light brightness according to the potentiometer value.
  */
-void tl_brightnessControl(void) {
-	uint32_t adcValue = 0;
+void tl_brightnessControl(uint8_t _percentage) {
+	brightness = _percentage;
+}
 
-	/**
-	 * Get the current ADC value (0 - 4096)
-	 */
-	HAL_ADC_Start(&hadc1);
-	HAL_ADC_PollForConversion(&hadc1,1);
-	adcValue = HAL_ADC_GetValue(&hadc1);
-
-	/**
-	 * We use the range 0 - 4000. 0 Being off and 4000 being 100% on.
-	 */
-	hc595_setBrightness(adcValue / 40);
+void tl_brightnessUpdate(void) {
+	hc595_setBrightness(brightness);
 }

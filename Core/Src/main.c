@@ -128,18 +128,7 @@ int main(void)
   //ssd1306_TestAll();
 
   ssd1306_Init();
-  ssd1306_Fill(Black);
-  ssd1306_SetCursor(2, 0);
-  ssd1306_WriteString("CAR-N", Font_7x10, White);
-  ssd1306_SetCursor(2, 12);
-  ssd1306_WriteString("CAR-W", Font_7x10, White);
-  ssd1306_SetCursor(2, 24);
-  ssd1306_WriteString("CAR-S", Font_7x10, White);
-  ssd1306_SetCursor(2, 36);
-  ssd1306_WriteString("CAR-E", Font_7x10, White);
-  ssd1306_SetCursor(2, 48);
-  ssd1306_WriteString("IS1300", Font_7x10, White);
-  ssd1306_UpdateScreen();
+
 
   HAL_Delay(20);
   uint8_t count = 0;

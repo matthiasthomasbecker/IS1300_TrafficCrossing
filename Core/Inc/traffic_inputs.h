@@ -40,7 +40,8 @@ void ti_update(void);
 ti_state_t ti_get_state(uint8_t _input);
 void ti_get_states(ti_state_t* _dest);
 ti_state_t ti_read_input(uint8_t _input);
-
+uint32_t ti_get_poti(void);
+uint8_t ti_get_poti_percent(void);
 void ti_test_inputs(void);
 
 #endif /* INC_TRAFFIC_INPUTS_H_ */

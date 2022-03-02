@@ -30,6 +30,7 @@
 #include "SEGGER_SYSVIEW.h"
 #include "semphr.h"
 #include "ssd1306.h"
+#include "demo_gui.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,10 +51,7 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
-/**
- * Copy of the inputs
- */
-ti_state_t input_state[TI_INPUT_COUNT];
+
 
 SemaphoreHandle_t dataMutex;
 
@@ -70,21 +68,29 @@ osThreadId_t input_taskHandle;
 const osThreadAttr_t input_task_attributes = {
   .name = "input_task",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) 3,
 };
 /* Definitions for output_task */
 osThreadId_t output_taskHandle;
 const osThreadAttr_t output_task_attributes = {
   .name = "output_task",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) 1,
 };
 /* Definitions for sensor_task */
-osThreadId_t sensor_taskHandle;
-const osThreadAttr_t sensor_task_attributes = {
-  .name = "sensor_task",
+//osThreadId_t sensor_taskHandle;
+//const osThreadAttr_t sensor_task_attributes = {
+//  .name = "sensor_task",
+//  .stack_size = 128 * 4,
+//  .priority = (osPriority_t) osPriorityLow,
+//};
+
+/* Definitions for sensor_task */
+osThreadId_t processing_taskHandle;
+const osThreadAttr_t processing_task_attributes = {
+  .name = "processing_task",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) 2,
 };
 
 /* Private function prototypes -----------------------------------------------*/
@@ -95,7 +101,8 @@ const osThreadAttr_t sensor_task_attributes = {
 void StartDefaultTask(void *argument);
 void StartInputTask(void *argument);
 void StartOutputTask(void *argument);
-void StartSensorTask(void *argument);
+//void StartSensorTask(void *argument);
+void StartProcessingTask(void *argument);
 
 void MX_FREERTOS_Init(void); /* (MISRA C 2004 rule 8.1) */
 
@@ -136,7 +143,10 @@ void MX_FREERTOS_Init(void) {
   output_taskHandle = osThreadNew(StartOutputTask, NULL, &output_task_attributes);
 
   /* creation of sensor_task */
-  sensor_taskHandle = osThreadNew(StartSensorTask, NULL, &sensor_task_attributes);
+  //sensor_taskHandle = osThreadNew(StartSensorTask, NULL, &sensor_task_attributes);
+
+  /* creation of processing_task */
+  processing_taskHandle = osThreadNew(StartProcessingTask, NULL, &processing_task_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -183,14 +193,12 @@ void StartInputTask(void *argument)
 	/* Infinite loop */
 	for(;;)
 	{
-		tl_brightnessControl();
-		ti_update();
 
 		/**
 		 * Copy the input data to the shared state
 		 */
 		if(xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
-			ti_get_states(input_state);
+			ti_update();
 			xSemaphoreGive(dataMutex);
 		}
 
@@ -219,6 +227,7 @@ void StartOutputTask(void *argument)
 		if(xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
 			tl_update();
 			ssd1306_UpdateScreen();
+			tl_brightnessUpdate();
 			xSemaphoreGive(dataMutex);
 		}
 		vTaskDelayUntil( &xLastWakeTime, xPeriod);
@@ -233,10 +242,36 @@ void StartOutputTask(void *argument)
 * @retval None
 */
 /* USER CODE END Header_StartSensorTask */
-void StartSensorTask(void *argument)
+//void StartSensorTask(void *argument)
+//{
+//	/* USER CODE BEGIN StartSensorTask */
+//	/* Infinite loop */
+//	TickType_t xLastWakeTime;
+//	const TickType_t xPeriod = pdMS_TO_TICKS(20) ;
+//	xLastWakeTime = xTaskGetTickCount();
+//
+//	/* Infinite loop */
+//	for(;;)
+//	{
+//		vTaskDelayUntil( &xLastWakeTime, xPeriod);
+//	}
+//	/* USER CODE END StartSensorTask */
+//}
+
+/* USER CODE BEGIN Header_StartProcessingTask */
+/**
+* @brief Function implementing the processing_task thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartProcessingTask */
+void StartProcessingTask(void *argument)
 {
 	/* USER CODE BEGIN StartSensorTask */
-	/* Infinite loop */
+
+	// Copy of the inputs
+	ti_state_t input_state[TI_INPUT_COUNT];
+
 	TickType_t xLastWakeTime;
 	const TickType_t xPeriod = pdMS_TO_TICKS(20) ;
 	xLastWakeTime = xTaskGetTickCount();
@@ -244,6 +279,13 @@ void StartSensorTask(void *argument)
 	/* Infinite loop */
 	for(;;)
 	{
+		if(xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+			ti_get_states(input_state);
+			xSemaphoreGive(dataMutex);
+		}
+
+		demo_gui_update(input_state, ti_get_poti_percent());
+		tl_brightnessControl(ti_get_poti_percent());
 		vTaskDelayUntil( &xLastWakeTime, xPeriod);
 	}
 	/* USER CODE END StartSensorTask */

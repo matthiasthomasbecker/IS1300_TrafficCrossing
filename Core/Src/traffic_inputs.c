@@ -9,10 +9,14 @@
 #include <stdio.h>
 #include <string.h>
 
+extern ADC_HandleTypeDef hadc1;
+
 /**
  * Current state of the input
  */
 ti_state_t state[TI_INPUT_COUNT];
+
+uint32_t adcValue;
 
 ti_input_t inputs[] = {
 	{
@@ -59,6 +63,18 @@ void ti_update(void) {
 	for (int i = 0; i < TI_INPUT_COUNT; i++) {
 		state[i] = ti_read_input(i);
 	}
+
+	/**
+	 * Get the current ADC value (0 - 4096)
+	 */
+	HAL_ADC_Start(&hadc1);
+	HAL_ADC_PollForConversion(&hadc1,1);
+	adcValue = HAL_ADC_GetValue(&hadc1);
+
+		/**
+		 * We use the range 0 - 4000. 0 Being off and 4000 being 100% on.
+		 */
+		//adcValue / 40
 }
 
 ti_state_t ti_get_state(uint8_t _input) {
@@ -73,6 +89,16 @@ ti_state_t ti_read_input(uint8_t _input) {
 	if ( HAL_GPIO_ReadPin(inputs[_input].gpio, inputs[_input].pin) == GPIO_PIN_SET) {
 		return TI_ON;
 	} else return TI_OFF;
+}
+
+uint32_t ti_get_poti(void) {
+	return adcValue;
+}
+
+uint8_t ti_get_poti_percent(void) {
+	uint32_t tmp = adcValue / 40;
+	if (tmp > 100) tmp = 100;
+	return (uint8_t)tmp;
 }
 
 void ti_test_inputs(void) {
