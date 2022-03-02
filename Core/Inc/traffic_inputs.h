@@ -10,6 +10,8 @@
 
 #include "main.h"
 
+#define TI_INPUT_COUNT 11
+
 typedef struct {
 	GPIO_TypeDef* 	gpio;
 	uint16_t 		pin;
@@ -33,7 +35,10 @@ typedef enum {
 #define JOYSTIC_CENTER		10
 
 
-
+void ti_init(void);
+void ti_update(void);
+ti_state_t ti_get_state(uint8_t _input);
+void ti_get_states(ti_state_t* _dest);
 ti_state_t ti_read_input(uint8_t _input);
 
 void ti_test_inputs(void);

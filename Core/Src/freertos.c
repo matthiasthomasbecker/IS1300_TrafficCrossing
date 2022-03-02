@@ -26,7 +26,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "trafficlights.h"
+#include "traffic_inputs.h"
 #include "SEGGER_SYSVIEW.h"
+#include "semphr.h"
+#include "ssd1306.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -46,6 +49,13 @@
 
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
+
+/**
+ * Copy of the inputs
+ */
+ti_state_t input_state[TI_INPUT_COUNT];
+
+SemaphoreHandle_t dataMutex;
 
 /* USER CODE END Variables */
 /* Definitions for defaultTask */
@@ -149,13 +159,10 @@ void MX_FREERTOS_Init(void) {
 void StartDefaultTask(void *argument)
 {
 
-	  SEGGER_SYSVIEW_Start();
   /* USER CODE BEGIN StartDefaultTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+	SEGGER_SYSVIEW_Start();
+	dataMutex = xSemaphoreCreateMutex();
+	vTaskSuspend(NULL);
   /* USER CODE END StartDefaultTask */
 }
 
@@ -177,6 +184,16 @@ void StartInputTask(void *argument)
 	for(;;)
 	{
 		tl_brightnessControl();
+		ti_update();
+
+		/**
+		 * Copy the input data to the shared state
+		 */
+		if(xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+			ti_get_states(input_state);
+			xSemaphoreGive(dataMutex);
+		}
+
 		vTaskDelayUntil( &xLastWakeTime, xPeriod);
 	}
   /* USER CODE END StartInputTask */
@@ -191,13 +208,22 @@ void StartInputTask(void *argument)
 /* USER CODE END Header_StartOutputTask */
 void StartOutputTask(void *argument)
 {
-  /* USER CODE BEGIN StartOutputTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartOutputTask */
+	/* USER CODE BEGIN StartOutputTask */
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = pdMS_TO_TICKS(20) ;
+	xLastWakeTime = xTaskGetTickCount();
+
+	/* Infinite loop */
+	for(;;)
+	{
+		if(xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
+			tl_update();
+			ssd1306_UpdateScreen();
+			xSemaphoreGive(dataMutex);
+		}
+		vTaskDelayUntil( &xLastWakeTime, xPeriod);
+	}
+	/* USER CODE END StartOutputTask */
 }
 
 /* USER CODE BEGIN Header_StartSensorTask */
@@ -209,13 +235,18 @@ void StartOutputTask(void *argument)
 /* USER CODE END Header_StartSensorTask */
 void StartSensorTask(void *argument)
 {
-  /* USER CODE BEGIN StartSensorTask */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END StartSensorTask */
+	/* USER CODE BEGIN StartSensorTask */
+	/* Infinite loop */
+	TickType_t xLastWakeTime;
+	const TickType_t xPeriod = pdMS_TO_TICKS(20) ;
+	xLastWakeTime = xTaskGetTickCount();
+
+	/* Infinite loop */
+	for(;;)
+	{
+		vTaskDelayUntil( &xLastWakeTime, xPeriod);
+	}
+	/* USER CODE END StartSensorTask */
 }
 
 /* Private application code --------------------------------------------------*/

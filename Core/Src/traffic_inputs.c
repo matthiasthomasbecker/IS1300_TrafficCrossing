@@ -7,6 +7,12 @@
 
 #include "traffic_inputs.h"
 #include <stdio.h>
+#include <string.h>
+
+/**
+ * Current state of the input
+ */
+ti_state_t state[TI_INPUT_COUNT];
 
 ti_input_t inputs[] = {
 	{
@@ -44,6 +50,24 @@ ti_input_t inputs[] = {
 		Button3_Center_Pin
 	}
 };
+
+void ti_init(void) {
+	ti_update();
+}
+
+void ti_update(void) {
+	for (int i = 0; i < TI_INPUT_COUNT; i++) {
+		state[i] = ti_read_input(i);
+	}
+}
+
+ti_state_t ti_get_state(uint8_t _input) {
+	return state[_input];
+}
+
+void ti_get_states(ti_state_t* _dest) {
+	memcpy(_dest, state, sizeof(state));
+}
 
 ti_state_t ti_read_input(uint8_t _input) {
 	if ( HAL_GPIO_ReadPin(inputs[_input].gpio, inputs[_input].pin) == GPIO_PIN_SET) {

@@ -62,6 +62,13 @@ void tl_setLight(tl_light_t* _light, tl_state_t _state) {
 }
 
 /**
+ * Update the LEDs
+ */
+void tl_update(void) {
+	hc595_update(light_state);
+}
+
+/**
  * Call this function to set the traffic light brightness according to the potentiometer value.
  */
 void tl_brightnessControl(void) {
