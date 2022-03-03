@@ -31,6 +31,8 @@
 #include "semphr.h"
 #include "ssd1306.h"
 #include "demo_gui.h"
+#include "Accelerometer.h"
+#include "environment.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -51,8 +53,6 @@
 /* Private variables ---------------------------------------------------------*/
 /* USER CODE BEGIN Variables */
 
-
-
 SemaphoreHandle_t dataMutex;
 
 /* USER CODE END Variables */
@@ -67,14 +67,14 @@ const osThreadAttr_t defaultTask_attributes = {
 osThreadId_t input_taskHandle;
 const osThreadAttr_t input_task_attributes = {
   .name = "input_task",
-  .stack_size = 128 * 4,
+  .stack_size = 128 * 8,
   .priority = (osPriority_t) 3,
 };
 /* Definitions for output_task */
 osThreadId_t output_taskHandle;
 const osThreadAttr_t output_task_attributes = {
   .name = "output_task",
-  .stack_size = 128 * 4,
+  .stack_size = 128 * 8,
   .priority = (osPriority_t) 1,
 };
 /* Definitions for sensor_task */
@@ -89,7 +89,7 @@ const osThreadAttr_t output_task_attributes = {
 osThreadId_t processing_taskHandle;
 const osThreadAttr_t processing_task_attributes = {
   .name = "processing_task",
-  .stack_size = 128 * 4,
+  .stack_size = 128 * 8,
   .priority = (osPriority_t) 2,
 };
 
@@ -187,7 +187,7 @@ void StartInputTask(void *argument)
 {
   /* USER CODE BEGIN StartInputTask */
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(20) ;
+	const TickType_t xPeriod = pdMS_TO_TICKS(100) ;
 	xLastWakeTime = xTaskGetTickCount();
 
 	/* Infinite loop */
@@ -199,6 +199,8 @@ void StartInputTask(void *argument)
 		 */
 		if(xSemaphoreTake(dataMutex, portMAX_DELAY) == pdTRUE) {
 			ti_update();
+			acc_update();
+			env_update();
 			xSemaphoreGive(dataMutex);
 		}
 
@@ -218,7 +220,7 @@ void StartOutputTask(void *argument)
 {
 	/* USER CODE BEGIN StartOutputTask */
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(20) ;
+	const TickType_t xPeriod = pdMS_TO_TICKS(100) ;
 	xLastWakeTime = xTaskGetTickCount();
 
 	/* Infinite loop */
@@ -273,7 +275,7 @@ void StartProcessingTask(void *argument)
 	ti_state_t input_state[TI_INPUT_COUNT];
 
 	TickType_t xLastWakeTime;
-	const TickType_t xPeriod = pdMS_TO_TICKS(20) ;
+	const TickType_t xPeriod = pdMS_TO_TICKS(100) ;
 	xLastWakeTime = xTaskGetTickCount();
 
 	/* Infinite loop */
@@ -283,8 +285,7 @@ void StartProcessingTask(void *argument)
 			ti_get_states(input_state);
 			xSemaphoreGive(dataMutex);
 		}
-
-		demo_gui_update(input_state, ti_get_poti_percent());
+		demo_gui_update(input_state, ti_get_poti_percent(), acc_get_acceleration(), env_get_data());
 		tl_brightnessControl(ti_get_poti_percent());
 		vTaskDelayUntil( &xLastWakeTime, xPeriod);
 	}

@@ -76,5 +76,7 @@ void tl_brightnessControl(uint8_t _percentage);
 
 void tl_brightnessUpdate(void);
 void tl_update(void);
+void tl_lights_on(void);
+void tl_lights_off(void);
 
 #endif /* INC_TRAFFICLIGHTS_H_ */
