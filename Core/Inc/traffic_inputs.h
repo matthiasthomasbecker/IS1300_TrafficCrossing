@@ -28,10 +28,10 @@ typedef enum {
 #define CAR_NORTH			3
 #define PEDESTRIAN_WEST		4
 #define PEDESTRIAN_NORTH	5
-#define JOYSTIC_NORTH		6
-#define JOYSTIC_EAST		7
+#define JOYSTIC_NORTH		7
+#define JOYSTIC_EAST		9
 #define JOYSTIC_SOUTH		8
-#define JOYSTIC_WEST		9
+#define JOYSTIC_WEST		6
 #define JOYSTIC_CENTER		10
 
 
